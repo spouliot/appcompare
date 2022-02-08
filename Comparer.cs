@@ -22,9 +22,12 @@ class Comparer {
 		dt.Columns.Add (new DataColumn (" ", typeof (string)));
 
 		DirectoryInfo Directory1 = new (app1path);
+		var len1 = app1path.Length;
+		if (app1path [len1 - 1] != Path.DirectorySeparatorChar)
+			len1++;
 		foreach (var file in Directory1.GetFiles ("*.*", SearchOption.AllDirectories)) {
 			dt.Rows.Add (new object? [] {
-				file.FullName [(app1path.Length + 1)..],
+				file.FullName [len1..],
 				(file, file.Length),
 				empty,
 				-file.Length,
@@ -34,8 +37,11 @@ class Comparer {
 		}
 
 		DirectoryInfo Directory2 = new (app2path);
+		var len2 = app2path.Length;
+		if (app2path [len2 - 1] != Path.DirectorySeparatorChar)
+			len2++;
 		foreach (var file in Directory2.GetFiles ("*.*", SearchOption.AllDirectories)) {
-			var name = file.FullName [(app2path.Length + 1)..];
+			var name = file.FullName [len2..];
 			var row = dt.Rows.Find (name);
 			if (row is null) {
 				dt.Rows.Add (new object? [] {
