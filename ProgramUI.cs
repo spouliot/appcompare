@@ -69,7 +69,7 @@ class ProgramUI {
 
 	public static int Start (string [] args)
 	{
-		tf1.Text = app1_path = args.Length > 0 ? Path.GetFullPath (args [0]) : null;
+		tf1.Text = app1_path = args.Length > 0 ? Path.GetFullPath (args [0]) : Environment.CurrentDirectory;
 		tf1.MouseClick += (e) => {
 			if (e.MouseEvent.Flags == MouseFlags.Button1Clicked) {
 				FileOpenApp1 ();
@@ -77,7 +77,7 @@ class ProgramUI {
 			}
 		};
 
-		tf2.Text = app2_path = args.Length > 1 ? Path.GetFullPath (args [1]) : null;
+		tf2.Text = app2_path = args.Length > 1 ? Path.GetFullPath (args [1]) : Environment.CurrentDirectory;
 		tf2.MouseClick += (e) => {
 			if (e.MouseEvent.Flags == MouseFlags.Button1Clicked) {
 				FileOpenApp2 ();
@@ -98,7 +98,7 @@ class ProgramUI {
 	static string? FileOpen (string? currentDirectory)
 	{
 		using OpenDialog d = new ("Open Application / Directory", "", null, OpenDialog.OpenMode.Directory);
-		d.DirectoryPath = currentDirectory;
+		d.DirectoryPath = currentDirectory ?? Environment.CurrentDirectory;
 		Application.Run (d);
 		return d.Canceled ? null : Path.GetFullPath (d.FilePath.ToString ()!);
 	}
