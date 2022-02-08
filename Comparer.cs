@@ -1,4 +1,5 @@
 using System.Data;
+using System.Net;
 using System.Text;
 using CliWrap;
 using SimpleGist;
@@ -195,8 +196,11 @@ class Comparer {
 			var token = Environment.GetEnvironmentVariable ("GITHUB_OAUTH_TOKEN");
 			if (token is null) {
 				var home = Environment.GetEnvironmentVariable ("HOME");
-				if (home is not null)
-					token = File.ReadAllText (Path.Combine (home, ".gist"));
+				if (home is not null) {
+					var gist = Path.Combine (home, ".gist");
+					if (File.Exists (gist))
+						token = File.ReadAllText (gist);
+				}
 			}
 			GistClient.OAuthToken = token;
 		}
@@ -208,11 +212,22 @@ class Comparer {
 		request.AddFile ("report.md", ExportMarkdown (table));
 
 		Task<GistResponse>? task = Task.Run (async () => await GistClient.CreateAsync (request));
+
+		var url = "https://github.com/spouliot/appcompare/wiki/Gist#Errors";
 		if (task.Result is null)
-			return "";
+			return url;
+
+		switch (task.Result.StatusCode) {
+		case HttpStatusCode.Created:
+			url = task.Result.Url;
+			break;
+		case HttpStatusCode.Unauthorized:
+			url = $"https://github.com/spouliot/appcompare/wiki/Gist#{task.Result.StatusCode}";
+			break;
+		}
 
 		if (openUrl)
-			_ = Task.Run (async () => await Cli.Wrap ("open").WithArguments (task.Result.Url).ExecuteAsync ());
-		return task.Result.Url;
+			_ = Task.Run (async () => await Cli.Wrap ("open").WithArguments (url).ExecuteAsync ());
+		return url;
 	}
 }
