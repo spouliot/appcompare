@@ -6,7 +6,20 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <NoWarn>1591</NoWarn>
-    <VersionPrefix>2.0.0</VersionPrefix>
+    <PackAsTool>true</PackAsTool>
+    <VersionPrefix>2.0.1</VersionPrefix>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Copyright>Sebastien Pouliot</Copyright>
+    <NeutralLanguage>en-US</NeutralLanguage>
+    <Authors>Sebastien Pouliot</Authors>
+    <PackageTags>tool;comparer;appbundle</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageReleaseNotes>https://github.com/spouliot/appcompare/blob/master/ChangeLog.md</PackageReleaseNotes>
+    <PackageProjectUrl>https://github.com/spouliot/appcompare</PackageProjectUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>
