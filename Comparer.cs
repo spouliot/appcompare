@@ -232,8 +232,13 @@ class Comparer {
 			break;
 		}
 
-		if (openUrl)
-			_ = Task.Run (async () => await Cli.Wrap ("open").WithArguments (url).ExecuteAsync ());
+		if (openUrl) {
+			_ = Task.Run (async () => await Cli.Wrap ("open")
+				.WithArguments (url)
+				.WithValidation (CommandResultValidation.None)
+				.ExecuteAsync ()
+				);
+		}
 		return url;
 	}
 }
