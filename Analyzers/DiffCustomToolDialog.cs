@@ -77,12 +77,16 @@ class DiffCustomToolDialog : Dialog {
 		tool.TextChanged += ToolChanged;
 		Add (file1label, tf1, file2label, tf2, t, tool, a, arguments, sort);
 
-		open.Clicked += async () => await DiffAsync (fa, fb, Output.Open);
-		open.Clicked += () => Application.RequestStop ();
+		open.Clicked += async () => {
+			await DiffAsync (fa, fb, Output.Open);
+			Application.RequestStop ();
+		};
 		AddButton (open);
 
-		gist.Clicked += async () => await DiffAsync (fa, fb, Output.Gist);
-		gist.Clicked += () => Application.RequestStop ();
+		gist.Clicked += async () => {
+			await DiffAsync (fa, fb, Output.Gist);
+			Application.RequestStop ();
+		};
 		AddButton (gist);
 
 		cancel.Clicked += () => Application.RequestStop ();
@@ -96,23 +100,34 @@ class DiffCustomToolDialog : Dialog {
 
 	static async Task<CommandResult> DiffAsync (FileInfo file1, FileInfo file2, Output output)
 	{
-		var temp = Path.GetTempPath ();
-		var ta = Path.Combine (temp, file1.Name) + ".a.text";
-		var tb = Path.Combine (temp, file2.Name) + ".b.text";
+		var temp = Path.Combine (Path.GetTempPath (), "appcompare", "diffcustomtooloutput");
 		var toolname = tool.Text.ToString ()!;
-		var args = arguments.Text.ToString ()!;
-		var t1 = Cli.Wrap (toolname!)
-			.WithArguments (new [] { args, file1.Name })
-			.WithWorkingDirectory (file1.DirectoryName!)
+		var args = arguments.Text.ToString ();
+
+		List<string> args1 = new ();
+		if (args is not null && args.Length > 0) {
+			foreach (var s in args.Split (' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)) {
+				args1.Add (s);
+			}
+		}
+		List<string> args2 = new (args1);
+		args1.Add (file1.FullName);
+		args2.Add (file2.FullName);
+
+		var ta = Path.Combine (temp, file1.Name) + ".a.text";
+		var t1 = Cli.Wrap (toolname)
+			.WithArguments (args1, escape: true)
 			.WithStandardOutputPipe (PipeTarget.ToFile (ta))
 			.WithValidation (CommandResultValidation.None)
 			.ExecuteAsync ();
+
+		var tb = Path.Combine (temp, file2.Name) + ".b.text";
 		var t2 = Cli.Wrap (toolname)
-			.WithArguments (new [] { args, file2.Name })
-			.WithWorkingDirectory (file2.DirectoryName!)
+			.WithArguments (args2, escape: true)
 			.WithStandardOutputPipe (PipeTarget.ToFile (tb))
 			.WithValidation (CommandResultValidation.None)
 			.ExecuteAsync ();
+
 		if (sort.Checked) {
 			var sa = Path.ChangeExtension (ta, ".sorted");
 			var sb = Path.ChangeExtension (tb, ".sorted");
@@ -136,7 +151,7 @@ class DiffCustomToolDialog : Dialog {
 
 		var diff_u = Path.GetTempFileName () + ".diff";
 		await Cli.Wrap ("diff")
-			.WithArguments (new [] { "-u", ta, tb })
+			.WithArguments (new [] { "-u", ta, tb }, escape: true)
 			.WithStandardOutputPipe (PipeTarget.ToFile (diff_u))
 			.WithValidation (CommandResultValidation.None)
 			.ExecuteAsync ();
@@ -159,7 +174,7 @@ class DiffCustomToolDialog : Dialog {
 			};
 			request.AddFile ("analysis.diff", File.ReadAllText (diff_u));
 			var gist = await GistClient.CreateAsync (request);
-			// we'll open the gist in a browser
+			// we'll open the gist, of the unified diff, in a browser
 			diff_u = gist.Url;
 		}
 
