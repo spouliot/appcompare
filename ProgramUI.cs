@@ -1,4 +1,5 @@
 using System.Text;
+using AppCompare.Analyzers;
 using Terminal.Gui;
 
 namespace AppCompare;
@@ -18,6 +19,9 @@ class ProgramUI {
 			new ("_Gist App Compare Report...", "", ViewGist, null, null, Key.CtrlMask | Key.G),
 			null,
 			new ("_Refresh", "", ViewRefresh, null, null, Key.F5),
+		}),
+		new ("_Analyze", new MenuItem? [] {
+			new ("Diff Custom _Tool Output...", "", AnalyzeDiffCustomTool, BothFilesPresent, null, Key.CtrlMask | Key.T),
 		}),
 		new ("_Help", new MenuItem [] {
 			new ("About...", "", HelpAbout),
@@ -145,6 +149,30 @@ class ProgramUI {
 		if ((app1_path is not null) && (app2_path is not null)) {
 			tv.Table = Comparer.GetTable (app1_path, app2_path);
 			tv.Refresh ();
+		}
+	}
+
+	static (FileInfo?, FileInfo?) CurrentSelection {
+		get {
+			var row = tv.Table.Rows [tv.SelectedRow];
+			(FileInfo? file1, long _) = ((FileInfo?, long)) row [1];
+			(FileInfo? file2, long _) = ((FileInfo?, long)) row [2];
+			return (file1, file2);
+		}
+	}
+
+	static bool BothFilesPresent ()
+	{
+		(FileInfo? fa, FileInfo? fb) = CurrentSelection;
+		return fa is not null && fb is not null;
+	}
+
+	static void AnalyzeDiffCustomTool ()
+	{
+		(FileInfo? fa, FileInfo? fb) = CurrentSelection;
+		if (fa is not null && fb is not null) {
+			DiffCustomToolDialog dialog = new (fa, fb);
+			Application.Run (dialog);
 		}
 	}
 
