@@ -21,7 +21,10 @@ class ProgramUI {
 			new ("_Refresh", "", ViewRefresh, null, null, Key.F5),
 		}),
 		new ("_Analyze", new MenuItem? [] {
-			new ("Diff Custom _Tool Output...", "", AnalyzeDiffCustomTool, BothFilesPresent, null, Key.CtrlMask | Key.T),
+			new ("Diff Custom _Tool Output...", "", AnalyzeDiffCustomTool, BothFilesPresent, null, Key.ShiftMask | Key.T),
+			null,
+			new ("_Identify All Files", "", AnalyzeIdentifyAll, null, null, Key.ShiftMask | Key.I),
+			new ("Identify _Selected File", "", AnalyzeIdentifySelected, AnyFilesPresent, null, Key.ShiftMask | Key.J),
 		}),
 		new ("_Help", new MenuItem [] {
 			new ("About...", "", HelpAbout),
@@ -165,6 +168,47 @@ class ProgramUI {
 	{
 		(FileInfo? fa, FileInfo? fb) = CurrentSelection;
 		return fa is not null && fb is not null;
+	}
+
+	static bool AnyFilesPresent ()
+	{
+		(FileInfo? fa, FileInfo? fb) = CurrentSelection;
+		return fa is not null || fb is not null;
+	}
+
+	public static void AnalyzeIdentifyAll ()
+	{
+		List<FileInfo> files = new (tv.Table.Rows.Count - 8);
+		foreach (System.Data.DataRow row in tv.Table.Rows) {
+			(FileInfo? file1, long _) = ((FileInfo?, long)) row [1];
+			if (file1 is null) {
+				(FileInfo? file2, long _) = ((FileInfo?, long)) row [2];
+				if (file2 is not null)
+					files.Add (file2);
+			} else {
+				files.Add (file1);
+			}
+		}
+		int n = 0;
+		foreach (var filetype in Identifier.Identify (files)) {
+			tv.Table.Rows [n++] [5] = filetype;
+		}
+		tv.SetNeedsDisplay ();
+	}
+
+	public static void AnalyzeIdentifySelected ()
+	{
+		string filetype = "";
+		(FileInfo? fa, FileInfo? fb) = CurrentSelection;
+		if (fa is not null) {
+			filetype = Identifier.Identify (fa);
+		} else if (fb is not null) {
+			filetype = Identifier.Identify (fb);
+		}
+		if (filetype.Length > 0) {
+			tv.Table.Rows [tv.SelectedRow] [5] = filetype;
+			tv.SetNeedsDisplay ();
+		}
 	}
 
 	static void AnalyzeDiffCustomTool ()
