@@ -23,6 +23,7 @@ class ProgramUI {
 		new ("_Analyze", new MenuItem? [] {
 			new ("Diff Custom _Tool Output...", "", AnalyzeDiffCustomTool, BothFilesPresent, null, Key.ShiftMask | Key.T),
 			null,
+			new ("_Compare Selected File", "", AnalyzeCompareSelected, BothFilesPresent, null, Key.ShiftMask | Key.C),
 			new ("_Identify All Files", "", AnalyzeIdentifyAll, null, null, Key.ShiftMask | Key.I),
 			new ("Identify _Selected File", "", AnalyzeIdentifySelected, AnyFilesPresent, null, Key.ShiftMask | Key.J),
 		}),
@@ -174,6 +175,15 @@ class ProgramUI {
 	{
 		(FileInfo? fa, FileInfo? fb) = CurrentSelection;
 		return fa is not null || fb is not null;
+	}
+
+	static void AnalyzeCompareSelected ()
+	{
+		(FileInfo? fa, FileInfo? fb) = CurrentSelection;
+		if (fa is not null && fb is not null) {
+			tv.Table.Rows [tv.SelectedRow] [5] = CompareFiles.Compare (fa, fb);
+			tv.SetNeedsDisplay ();
+		}
 	}
 
 	public static void AnalyzeIdentifyAll ()

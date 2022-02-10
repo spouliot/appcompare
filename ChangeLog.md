@@ -5,6 +5,7 @@
 ### Features
 - Add a custom tool analyzer (`SHIFT+T`) to compare two files, e.g. run `otool -L` on both files and show the `diff -u` between them.
 - Add selected file (`SHIFT+J`) or all files (`SHIFT+I`) identification
+- Add selected file comparison (`SHIFT+C`)
 
 ## 2.0.1 (8 Feb 2022)
 
