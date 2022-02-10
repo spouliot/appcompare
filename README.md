@@ -39,7 +39,7 @@ the differences between the two bundles.
 $ appcompare path/to/bundle/1 path/to/bundle/2 -output-markdown report.md
 ```
 
-You can also use the `--gist` option to generate a [gist](https://github.com/spouliot/appcompare/wiki/Gist)
+You can also use the `--gist` option to generate a [gist](https://github.com/spouliot/SimpleGist/wiki)
 from the output. The url of the gist will be printed to stdout.
 
 ```bash
@@ -48,12 +48,23 @@ $ appcompare path/to/bundle/1 path/to/bundle/2 --gist
 
 ### With the Text User Interface
 
+Start the tool from the command line
+
+```bash
+$ appcompare
+```
+
 * Press `F1` to select the first application bundle.
 * Press `F2` to select the second application bundle.
 * Press `CTRL+G` to create a gist of the comparison.
 
 Voila! Now you can play around to find out what's different between
 the two bundles.
+
+### Advanced Usage
+
+The [wiki](https://github.com/spouliot/appcompare/wiki) covers ways to
+use the tool beyond the basic size comparison of markdown reports.
 
 ## When to use
 
@@ -64,7 +75,7 @@ changes inside your application and how this affected the build size.
 
 ## Dependencies
 
-Built on top
+Built on top of
 * [CliWrap](https://github.com/Tyrrrz/CliWrap)
 * [Spectre.Console](https://spectreconsole.net)
 * [Terminal.Gui](https://github.com/migueldeicaza/gui.cs)
