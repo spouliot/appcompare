@@ -10,6 +10,7 @@ class Identifier {
 		Task<BufferedCommandResult>? result = Task.Run (async () => {
 			return await Cli.Wrap ("file")
 				.WithArguments (arguments, escape: true)
+				.WithValidation (CommandResultValidation.None)
 				.ExecuteBufferedAsync ();
 		});
 		return result.Result.StandardOutput;
