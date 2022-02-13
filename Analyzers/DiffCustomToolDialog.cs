@@ -18,6 +18,10 @@ public class DiffCustomToolDialog : DiffBaseDialog {
 	TextField? arguments;
 	CheckBox? sort;
 
+	static string last_tool = "";
+	static string last_arguments = "";
+	static bool last_sort = true;
+
 	protected override void CustomUI ()
 	{
 		Label t = new () {
@@ -29,6 +33,7 @@ public class DiffCustomToolDialog : DiffBaseDialog {
 			X = Pos.Right (t) + 1,
 			Y = t.Y,
 			Width = Dim.Fill () - 1,
+			Text = last_tool,
 		};
 		tool.SetFocus ();
 		tool.TextChanged += ToolChanged;
@@ -41,23 +46,24 @@ public class DiffCustomToolDialog : DiffBaseDialog {
 			X = Pos.Right (t) + 1,
 			Y = a.Y,
 			Width = Dim.Fill () - 1,
+			Text = last_arguments,
 		};
 		sort = new () {
 			X = 1,
 			Y = Pos.Bottom (a) + 1,
 			Text = "Sort Results",
-			Checked = true,
+			Checked = last_sort,
 		};
 		Add (t, tool, a, arguments, sort);
 
 		open.Clicked += async () => {
 			await DiffAsync (Output.Open);
-			Application.RequestStop ();
+			Close ();
 		};
 
 		gist.Clicked += async () => {
 			await DiffAsync (Output.Gist);
-			Application.RequestStop ();
+			Close ();
 		};
 
 		ToolChanged (tool.Text);
@@ -71,6 +77,14 @@ public class DiffCustomToolDialog : DiffBaseDialog {
 	public string ToolName => tool is null ? "" : tool.Text.ToString ()!;
 	public string Arguments => arguments is null ? "" : arguments.Text.ToString ()!;
 	public bool Sorted => sort is not null && sort.Checked;
+
+	void Close ()
+	{
+		last_tool = ToolName;
+		last_arguments = Arguments;
+		last_sort = Sorted;
+		Application.RequestStop ();
+	}
 
 	async Task<CommandResult> DiffAsync (Output output)
 	{
