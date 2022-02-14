@@ -19,7 +19,7 @@ public class DiffCustomToolDialog : DiffBaseDialog {
 	CheckBox? sort;
 
 	static string last_tool = "";
-	static string last_arguments = "";
+	static string last_arguments = "{file}";
 	static bool last_sort = true;
 
 	protected override void CustomUI ()
@@ -98,8 +98,8 @@ public class DiffCustomToolDialog : DiffBaseDialog {
 			}
 		}
 		List<string> args2 = new (args1);
-		args1.Add (FileInfoA.FullName);
-		args2.Add (FileInfoB.FullName);
+		args1.ReplaceAll ("{file}", FileInfoA.FullName);
+		args2.ReplaceAll ("{file}", FileInfoB.FullName);
 
 		var ta = Path.Combine (temp, FileInfoA.Name) + ".a.text";
 		var t1 = Cli.Wrap (ToolName)
