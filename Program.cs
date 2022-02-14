@@ -20,8 +20,7 @@ class Program {
 				try {
 					Application.Init ();
 					return ProgramUI.Start (args);
-				}
-				finally {
+				} finally {
 					Application.Shutdown ();
 				}
 			}

@@ -22,7 +22,7 @@ class CompareFiles {
 
 		if (result.Result.ExitCode == 0)
 			return "identical";
-		
+
 		var output = result.Result.StandardOutput;
 		var pos = output.LastIndexOf (" differ: ");
 		return output [(pos + 1)..].Trim ();
