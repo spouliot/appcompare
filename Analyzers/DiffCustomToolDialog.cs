@@ -57,13 +57,23 @@ public class DiffCustomToolDialog : DiffBaseDialog {
 		Add (t, tool, a, arguments, sort);
 
 		open.Clicked += async () => {
-			await DiffAsync (Output.Open);
-			Close ();
+			try {
+				await DiffAsync (Output.Open);
+			} catch (Exception ex) {
+				MessageBox.ErrorQuery ("Error opening diff", ex.Message, "OK");
+			} finally {
+				Close ();
+			}
 		};
 
 		gist.Clicked += async () => {
-			await DiffAsync (Output.Gist);
-			Close ();
+			try {
+				await DiffAsync (Output.Gist);
+			} catch (Exception ex) {
+				MessageBox.ErrorQuery ("Error gisting diff", ex.Message, "OK");
+			} finally {
+				Close ();
+			}
 		};
 
 		ToolChanged (tool.Text);
