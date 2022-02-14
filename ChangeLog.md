@@ -1,6 +1,6 @@
 # ChangeLog
 
-## 2.1.0 (unreleased)
+## 2.1.0 (13 Feb 2022)
 
 ### Features
 - Add a custom tool analyzer (`SHIFT+T`) to compare two files, e.g. run `otool -L` on both files and show the `diff -u` between them.
