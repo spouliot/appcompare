@@ -5,16 +5,9 @@ namespace AppCompare;
 
 static class Mappings {
 
-	public static Dictionary<string,string> ReadFromFile (string mappingFile, out int result)
+	public static Dictionary<string, string> ReadFromFile (string mappingFile, out int result)
 	{
-		// return new Dictionary<string,string> () {
-		// 	{ "MySingleView.dll", "MySingleView.exe" },
-		// 	{ "Microsoft.iOS.dll", "Xamarin.iOS.dll" },
-		// 	{ "Microsoft.iOS.aotdata.arm64", "Xamarin.iOS.aotdata.arm64" },
-		// 	{ "System.Private.CoreLib.aotdata.arm64", "mscorlib.aotdata.arm64" },
-		// 	{ "System.Private.CoreLib.dll", "mscorlib.dll" },
-		// };
-		Dictionary<string,string> dict = new ();
+		Dictionary<string, string> dict = new ();
 		result = 1;
 		var lineno = 0;
 		try {
@@ -23,19 +16,18 @@ static class Mappings {
 				if (line [0] == '#')
 					continue;
 				var eq = line.IndexOf ('=');
-				if (eq == -1){
+				if (eq == -1) {
 					AnsiConsole.MarkupLine ($"[red]Error line {lineno}:[/] Missing `=` in a non-comment (`#`) line mapping.");
 					return dict;
 				}
-				var file_b = line[(eq + 1)..];
+				var file_b = line [(eq + 1)..];
 				if (dict.ContainsKey (file_b)) {
 					AnsiConsole.MarkupLine ($"[red]Error line {lineno}:[/] Duplicate mapping for `{file_b}`.");
 					return dict;
 				}
-				dict [file_b] = line[..eq];
+				dict [file_b] = line [..eq];
 			}
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			AnsiConsole.WriteException (e);
 		}
 		result = 0;
