@@ -226,7 +226,7 @@ class Comparer {
 				.WithArguments (url)
 				.WithValidation (CommandResultValidation.None)
 				.ExecuteAsync ()
-				);
+				).Result;
 		}
 		return url;
 	}

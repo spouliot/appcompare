@@ -1,10 +1,13 @@
 # ChangeLog
 
-## 2.2.0 (unreleased)
+## 2.2.0 (17 Feb 2022)
 
 ### Features
 - Add `--mapping-file <mapping-file>` option to specify a mapping file. This allows you to map the names of the files in the bundle to the names of the files in the previous bundle.
 - Add UI to pair/unpair files and to save the current mapping into a text file which can be loaded with `--mapping-file` or `File | Open File Mappings...`.
+
+### Fixes
+- Fix hang after creating a gist
 
 ## 2.1.0 (13 Feb 2022)
 
