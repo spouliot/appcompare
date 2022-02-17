@@ -7,7 +7,7 @@ namespace AppCompare;
 
 class Comparer {
 
-	public static DataTable GetTable (string app1path, string app2path, Dictionary<string,string> mappings)
+	public static DataTable GetTable (string app1path, string app2path, Dictionary<string, string> mappings)
 	{
 		DataTable dt = new ();
 		DataColumn files = new ("Files", typeof (string));

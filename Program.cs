@@ -16,7 +16,7 @@ class Program {
 	static int Main (string [] args, string? outputMarkdown, bool gist, string mappingFile)
 	{
 		try {
-			Dictionary<string,string>? mappings = null;
+			Dictionary<string, string>? mappings = null;
 
 			// if mappings are given then they must exists
 			if (mappingFile is not null) {
