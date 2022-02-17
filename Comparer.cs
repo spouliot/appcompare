@@ -1,5 +1,4 @@
 using System.Data;
-using System.Net;
 using System.Text;
 using CliWrap;
 using SimpleGist;
@@ -8,7 +7,7 @@ namespace AppCompare;
 
 class Comparer {
 
-	public static DataTable GetTable (string app1path, string app2path)
+	public static DataTable GetTable (string app1path, string app2path, Dictionary<string,string> mappings)
 	{
 		DataTable dt = new ();
 		DataColumn files = new ("Files", typeof (string));
@@ -43,6 +42,14 @@ class Comparer {
 		foreach (var file in Directory2.GetFiles ("*.*", SearchOption.AllDirectories)) {
 			var name = file.FullName [len2..];
 			var row = dt.Rows.Find (name);
+			var remapped = false;
+			if (row is null) {
+				// 2nd chance if the name is mapped to a different name in the first directory
+				if (mappings.TryGetValue (name, out var mapped)) {
+					row = dt.Rows.Find (mapped);
+					remapped = true;
+				}
+			}
 			if (row is null) {
 				dt.Rows.Add (new object? [] {
 					name,
@@ -53,6 +60,10 @@ class Comparer {
 					"",
 				});
 			} else {
+				if (remapped) {
+					var oldname = (string) row [0];
+					row [0] = oldname + " -> " + name;
+				}
 				row [2] = (file, file.Length);
 				var diff = file.Length;
 				(FileInfo? f1file, long f1length) = ((FileInfo?, long)) row [1];

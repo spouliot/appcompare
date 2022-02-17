@@ -1,5 +1,10 @@
 # ChangeLog
 
+## 2.2.0 (unreleased)
+
+### Features
+- Add `--mapping-file <mapping-file>` option to specify a mapping file. This allows you to map the names of the files in the bundle to the names of the files in the previous bundle.
+
 ## 2.1.0 (13 Feb 2022)
 
 ### Features

@@ -74,9 +74,12 @@ class ProgramUI {
 
 	static string? app1_path;
 	static string? app2_path;
+	static Dictionary<string, string>? mappings;
 
-	public static int Start (string [] args)
+	public static int Start (string [] args, Dictionary<string, string> fileMappings)
 	{
+		mappings = fileMappings;
+
 		tf1.Text = app1_path = args.Length > 0 ? Path.GetFullPath (args [0]) : Environment.CurrentDirectory;
 		tf1.MouseClick += (e) => {
 			if (e.MouseEvent.Flags == MouseFlags.Button1Clicked) {
@@ -151,7 +154,7 @@ class ProgramUI {
 	static void ViewRefresh ()
 	{
 		if ((app1_path is not null) && (app2_path is not null)) {
-			tv.Table = Comparer.GetTable (app1_path, app2_path);
+			tv.Table = Comparer.GetTable (app1_path, app2_path, mappings!);
 			tv.Refresh ();
 		}
 	}
