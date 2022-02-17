@@ -1,3 +1,4 @@
+using System.Data;
 using System.Text;
 using AppCompare.Analyzers;
 using Terminal.Gui;
@@ -11,9 +12,16 @@ class ProgramUI {
 			new ("Open App _A...", "", FileOpenApp1, null, null, Key.F1),
 			new ("Open App _B...", "", FileOpenApp2, null, null, Key.F2),
 			null,
+			new ("_Open File Mappings...", "", FileOpenMappings, null, null, Key.CtrlMask | Key.O),
+			new ("_Save File Mappings...", "", FileSaveMappings, AreMappingsPresent, null, Key.CtrlMask | Key.S),
+			null,
 			new ("_Export Markdown...", "", FileExport, null, null, Key.CtrlMask | Key.E),
 			null,
 			new ("_Quit", "", FileQuit, null, null, Key.CtrlMask | Key.Q),
+		}),
+		new ("_Edit", new MenuItem? [] {
+			new ("_Pair files...", "", EditPairFiles, AnyFilesPresent, null, Key.CtrlMask | Key.P),
+			new ("_Unpair files", "", EditUnpairFiles, IsPaired, null, Key.CtrlMask | Key.U),
 		}),
 		new ("_View", new MenuItem? [] {
 			new ("_Gist App Compare Report...", "", ViewGist, null, null, Key.CtrlMask | Key.G),
@@ -74,7 +82,7 @@ class ProgramUI {
 
 	static string? app1_path;
 	static string? app2_path;
-	static Dictionary<string, string>? mappings;
+	static Dictionary<string, string> mappings = new ();
 
 	public static int Start (string [] args, Dictionary<string, string> fileMappings)
 	{
@@ -132,6 +140,35 @@ class ProgramUI {
 		}
 	}
 
+	static void FileOpenMappings ()
+	{
+		using OpenDialog d = new ("Open File Mappings", "", null, OpenDialog.OpenMode.File);
+		d.DirectoryPath = Environment.CurrentDirectory;
+		Application.Run (d);
+		if (!d.Canceled) {
+			mappings = Mappings.ReadFromFile (d.FilePath.ToString ()!, out var result);
+			if (result == 0)
+				ViewRefresh ();
+		}
+	}
+
+	static bool AreMappingsPresent ()
+	{
+		return mappings.Count > 0;
+	}
+
+	static void FileSaveMappings ()
+	{
+		using SaveDialog d = new ("Save File Mappings", "", new () { ".map" });
+		d.FilePath = Path.Combine (Environment.CurrentDirectory, "mappings.map");
+		Application.Run (d);
+		if (!d.Canceled) {
+			using StreamWriter writer = new (d.FilePath.ToString ()!);
+			foreach (var kvp in mappings)
+				writer.WriteLine ($"{kvp.Value}={kvp.Key}");
+		}
+	}
+
 	static void FileExport ()
 	{
 		using SaveDialog d = new ("Export Table", "", new () { ".md" });
@@ -146,6 +183,60 @@ class ProgramUI {
 		Application.Top.Running = false;
 	}
 
+	static void EditPairFiles ()
+	{
+		(FileInfo? fa, FileInfo? fb) = CurrentSelection;
+		if ((fa is null) && (fb is null))
+			return;
+
+		List<string> files = new ();
+		if (fa is null) {
+			// don't include matched files (paired or not)
+			foreach (DataRow row in tv.Table.Rows) {
+				(FileInfo? file1, long _) = ((FileInfo?, long)) row [1];
+				if (file1 is null)
+					continue;
+				(FileInfo? file2, long _) = ((FileInfo?, long)) row [2];
+				if (file2 is not null)
+					continue;
+				files.Add (file1.Name);
+			}
+		}
+		if (fb is null) {
+			foreach (DataRow row in tv.Table.Rows) {
+				(FileInfo? file2, long _) = ((FileInfo?, long)) row [2];
+				if (file2 is null)
+					continue;
+				(FileInfo? file1, long _) = ((FileInfo?, long)) row [1];
+				if (file1 is not null)
+					continue;
+				files.Add (file2.Name);
+			}
+		}
+
+		MappingsDialog d = new (fa?.Name, fb?.Name, files);
+		Application.Run (d);
+		if ((d.FileA is not null) && (d.FileB is not null)) {
+			mappings.TryAdd (d.FileB, d.FileA);
+			ViewRefresh ();
+		}
+	}
+
+	static bool IsPaired ()
+	{
+		var current = tv.Table.Rows [tv.SelectedRow];
+		return (current [0] as string)!.Contains (" -> ");
+	}
+
+	static void EditUnpairFiles ()
+	{
+		if (!IsPaired ())
+			return;
+		(FileInfo? _, FileInfo? fb) = CurrentSelection;
+		mappings.Remove (fb!.Name);
+		ViewRefresh ();
+	}
+
 	static void ViewGist ()
 	{
 		Comparer.Gist (tv.Table);
@@ -154,7 +245,7 @@ class ProgramUI {
 	static void ViewRefresh ()
 	{
 		if ((app1_path is not null) && (app2_path is not null)) {
-			tv.Table = Comparer.GetTable (app1_path, app2_path, mappings!);
+			tv.Table = Comparer.GetTable (app1_path, app2_path, mappings);
 			tv.Refresh ();
 		}
 	}
@@ -192,7 +283,7 @@ class ProgramUI {
 	public static void AnalyzeIdentifyAll ()
 	{
 		List<FileInfo> files = new (tv.Table.Rows.Count - 8);
-		foreach (System.Data.DataRow row in tv.Table.Rows) {
+		foreach (DataRow row in tv.Table.Rows) {
 			(FileInfo? file1, long _) = ((FileInfo?, long)) row [1];
 			if (file1 is null) {
 				(FileInfo? file2, long _) = ((FileInfo?, long)) row [2];
