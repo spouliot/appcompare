@@ -20,58 +20,10 @@ class Comparer {
 		dt.Columns.Add (new DataColumn ("%", typeof (double)));
 		dt.Columns.Add (new DataColumn (" ", typeof (string)));
 
-		DirectoryInfo Directory1 = new (app1path);
-		var len1 = app1path.Length;
-		if (app1path [len1 - 1] != Path.DirectorySeparatorChar)
-			len1++;
-		foreach (var file in Directory1.GetFiles ("*.*", SearchOption.AllDirectories)) {
-			dt.Rows.Add (new object? [] {
-				file.FullName [len1..],
-				(file, file.Length),
-				empty,
-				-file.Length,
-				-1.0d,
-				"",
-			});
-		}
-
-		DirectoryInfo Directory2 = new (app2path);
-		var len2 = app2path.Length;
-		if (app2path [len2 - 1] != Path.DirectorySeparatorChar)
-			len2++;
-		foreach (var file in Directory2.GetFiles ("*.*", SearchOption.AllDirectories)) {
-			var name = file.FullName [len2..];
-			var row = dt.Rows.Find (name);
-			var remapped = false;
-			if (row is null) {
-				// 2nd chance if the name is mapped to a different name in the first directory
-				if (mappings.TryGetValue (name, out var mapped)) {
-					row = dt.Rows.Find (mapped);
-					remapped = true;
-				}
-			}
-			if (row is null) {
-				dt.Rows.Add (new object? [] {
-					name,
-					empty,
-					(file, file.Length),
-					file.Length,
-					double.NaN,
-					"",
-				});
-			} else {
-				if (remapped) {
-					var oldname = (string) row [0];
-					row [0] = oldname + " -> " + name;
-				}
-				row [2] = (file, file.Length);
-				var diff = file.Length;
-				(FileInfo? f1file, long f1length) = ((FileInfo?, long)) row [1];
-				diff -= f1length;
-				row [3] = diff;
-				row [4] = diff / (double) f1length;
-				row [5] = "";
-			}
+		try {
+			Populate (dt, app1path, app2path, mappings);
+		} catch (Exception ex) {
+			dt.ExtendedProperties.Add ("Exception", ex);
 		}
 
 		dt.DefaultView.Sort = "Files ASC";
@@ -146,6 +98,68 @@ class Comparer {
 		AddEmptyRow (dt);
 		AddSummaryRow (dt, "TOTAL", size_a, size_b);
 		return dt;
+	}
+
+	static void Populate (DataTable dt, string app1path, string app2path, Dictionary<string, string> mappings)
+	{
+		DirectoryInfo Directory1 = new (app1path);
+		if (Directory1.Exists) {
+			var len1 = app1path.Length;
+			if (app1path [len1 - 1] != Path.DirectorySeparatorChar)
+				len1++;
+			foreach (var file in Directory1.GetFiles ("*.*", SearchOption.AllDirectories)) {
+				dt.Rows.Add (new object? [] {
+					file.FullName [len1..],
+					(file, file.Length),
+					empty,
+					-file.Length,
+					-1.0d,
+					"",
+				});
+			}
+		}
+
+		DirectoryInfo Directory2 = new (app2path);
+		if (!Directory2.Exists)
+			return;
+
+		var len2 = app2path.Length;
+		if (app2path [len2 - 1] != Path.DirectorySeparatorChar)
+			len2++;
+		foreach (var file in Directory2.GetFiles ("*.*", SearchOption.AllDirectories)) {
+			var name = file.FullName [len2..];
+			var row = dt.Rows.Find (name);
+			var remapped = false;
+			if (row is null) {
+				// 2nd chance if the name is mapped to a different name in the first directory
+				if (mappings.TryGetValue (name, out var mapped)) {
+					row = dt.Rows.Find (mapped);
+					remapped = true;
+				}
+			}
+			if (row is null) {
+				dt.Rows.Add (new object? [] {
+					name,
+					empty,
+					(file, file.Length),
+					file.Length,
+					double.NaN,
+					"",
+				});
+			} else {
+				if (remapped) {
+					var oldname = (string) row [0];
+					row [0] = oldname + " -> " + name;
+				}
+				row [2] = (file, file.Length);
+				var diff = file.Length;
+				(FileInfo? f1file, long f1length) = ((FileInfo?, long)) row [1];
+				diff -= f1length;
+				row [3] = diff;
+				row [4] = diff / (double) f1length;
+				row [5] = "";
+			}
+		}
 	}
 
 	static readonly (FileInfo?, long) empty = (null, 0);

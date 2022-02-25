@@ -246,6 +246,9 @@ class ProgramUI {
 	{
 		if ((app1_path is not null) && (app2_path is not null)) {
 			tv.Table = Comparer.GetTable (app1_path, app2_path, mappings);
+			if (tv.Table.ExtendedProperties ["Exception"] is Exception ex) {
+				MessageBox.ErrorQuery (60, 13, "Error", ex.ToString (), "_Ok");
+			}
 			tv.Refresh ();
 		}
 	}

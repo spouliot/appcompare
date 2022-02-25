@@ -1,5 +1,10 @@
 # ChangeLog
 
+## 2.2.1 (unreleased)
+
+### Fixes
+- Fix possible exception when refreshing (`F5`) in case the path(s) does not exist anymore.
+
 ## 2.2.0 (17 Feb 2022)
 
 ### Features
