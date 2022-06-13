@@ -7,6 +7,8 @@ namespace AppCompare;
 
 class Comparer {
 
+	const string FILTER_ALL_FILES = "*.*";
+
 	public static DataTable GetTable (string app1path, string app2path, Dictionary<string, string> mappings)
 	{
 		DataTable dt = new ();
@@ -21,7 +23,7 @@ class Comparer {
 		dt.Columns.Add (new DataColumn (" ", typeof (string)));
 
 		try {
-			Populate (dt, app1path, app2path, mappings);
+			Populate (dt, app1path, app2path, mappings, FILTER_ALL_FILES);
 		} catch (Exception ex) {
 			dt.ExtendedProperties.Add ("Exception", ex);
 		}
@@ -100,14 +102,14 @@ class Comparer {
 		return dt;
 	}
 
-	static void Populate (DataTable dt, string app1path, string app2path, Dictionary<string, string> mappings)
+	static void Populate (DataTable dt, string app1path, string app2path, Dictionary<string, string> mappings, string filter)
 	{
 		DirectoryInfo Directory1 = new (app1path);
 		if (Directory1.Exists) {
 			var len1 = app1path.Length;
 			if (app1path [len1 - 1] != Path.DirectorySeparatorChar)
 				len1++;
-			foreach (var file in Directory1.GetFiles ("*.*", SearchOption.AllDirectories)) {
+			foreach (var file in Directory1.GetFiles (filter, SearchOption.AllDirectories)) {
 				dt.Rows.Add (new object? [] {
 					file.FullName [len1..],
 					(file, file.Length),
@@ -126,7 +128,7 @@ class Comparer {
 		var len2 = app2path.Length;
 		if (app2path [len2 - 1] != Path.DirectorySeparatorChar)
 			len2++;
-		foreach (var file in Directory2.GetFiles ("*.*", SearchOption.AllDirectories)) {
+		foreach (var file in Directory2.GetFiles (filter, SearchOption.AllDirectories)) {
 			var name = file.FullName [len2..];
 			var row = dt.Rows.Find (name);
 			var remapped = false;
