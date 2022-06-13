@@ -9,9 +9,9 @@ class Comparer {
 
 	const string FILTER_ALL_FILES = "*.*";
 
-	public static DataTable GetTable (string app1path, string app2path, Dictionary<string, string> mappings, string? obj1path = null, string? obj2path = null)
+	public static DataTable GetAppCompareTable (string app1path, string app2path, Dictionary<string, string> mappings)
 	{
-		DataTable dt = new ();
+		DataTable dt = new ("App bundle compare");
 		DataColumn files = new ("Files", typeof (string));
 		dt.Columns.Add (files);
 		dt.PrimaryKey = new [] { files };
@@ -176,40 +176,44 @@ class Comparer {
 		});
 	}
 
-	static public string ExportMarkdown (DataTable table)
+	static public string ExportMarkdown (List<DataTable> tables)
 	{
 		StringBuilder builder = new ();
 		builder.AppendLine ("# Application Comparer");
 		builder.AppendLine ();
 
-		builder.Append ("* App A: `").Append (table.ExtendedProperties ["AppA"]).AppendLine ("`");
-		builder.Append ("* App B: `").Append (table.ExtendedProperties ["AppB"]).AppendLine ("`");
-		builder.AppendLine ();
+		foreach (var table in tables) {
+			builder.AppendLine ($"## {table.TableName}");
+			builder.AppendLine ();
+			builder.Append ("* Path A: `").Append (table.ExtendedProperties ["AppA"]).AppendLine ("`");
+			builder.Append ("* Path B: `").Append (table.ExtendedProperties ["AppB"]).AppendLine ("`");
+			builder.AppendLine ();
 
-		var columns = table.Columns;
-		// skip last "comment" column - it's for the tool itself, not for reporting
-		for (int i = 0; i < columns.Count - 1; i++) {
-			builder.Append ("| ").Append (columns [i].ColumnName).Append (' ');
-		}
-		builder.AppendLine ("|");
+			var columns = table.Columns;
+			// skip last "comment" column - it's for the tool itself, not for reporting
+			for (int i = 0; i < columns.Count - 1; i++) {
+				builder.Append ("| ").Append (columns [i].ColumnName).Append (' ');
+			}
+			builder.AppendLine ("|");
 
-		builder.AppendLine ("|:----|----:|----:|----:|----:|");
+			builder.AppendLine ("|:----|----:|----:|----:|----:|");
 
-		foreach (DataRow row in table.Rows) {
-			var file = row [0] as string;
-			if (file!.Length == 0) {
-				builder.AppendLine ("| | | | | |");
-			} else {
-				builder.Append ("| ").Append (row [0]);
-				(_, long f1length) = ((FileInfo?, long)) row [1];
-				builder.Append (" | ").AppendFormat ("{0:N0}", f1length);
-				(_, long f2length) = ((FileInfo?, long)) row [2];
-				builder.Append (" | ").AppendFormat ("{0:N0}", f2length);
-				builder.Append (" | ").AppendFormat ("{0:N0}", row [3]);
-				var percentage = (double) row [4];
-				var display = Double.IsNaN (percentage) ? "-" : percentage.ToString ("P1");
-				builder.Append (" | ").Append (display);
-				builder.AppendLine (" |)");
+			foreach (DataRow row in table.Rows) {
+				var file = row [0] as string;
+				if (file!.Length == 0) {
+					builder.AppendLine ("| | | | | |");
+				} else {
+					builder.Append ("| ").Append (row [0]);
+					(_, long f1length) = ((FileInfo?, long)) row [1];
+					builder.Append (" | ").AppendFormat ("{0:N0}", f1length);
+					(_, long f2length) = ((FileInfo?, long)) row [2];
+					builder.Append (" | ").AppendFormat ("{0:N0}", f2length);
+					builder.Append (" | ").AppendFormat ("{0:N0}", row [3]);
+					var percentage = (double) row [4];
+					var display = Double.IsNaN (percentage) ? "-" : percentage.ToString ("P1");
+					builder.Append (" | ").Append (display);
+					builder.AppendLine (" |)");
+				}
 			}
 		}
 		builder.AppendLine ();
@@ -217,13 +221,13 @@ class Comparer {
 		return builder.ToString ();
 	}
 
-	static public string Gist (DataTable table, bool openUrl = true)
+	static public string Gist (List<DataTable> tables, bool openUrl = true)
 	{
 		GistRequest request = new () {
 			Description = "Application Comparison Report",
 			Public = false,
 		};
-		request.AddFile ("report.md", ExportMarkdown (table));
+		request.AddFile ("report.md", ExportMarkdown (tables));
 
 		Task<GistResponse>? task = Task.Run (async () => await GistClient.CreateAsync (request));
 		var url = "https://github.com/spouliot/SimpleGist/wiki#errors";

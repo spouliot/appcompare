@@ -1,5 +1,6 @@
 using Spectre.Console;
 using Terminal.Gui;
+using System.Data;
 
 namespace AppCompare;
 
@@ -18,6 +19,7 @@ class Program {
 	{
 		try {
 			Dictionary<string, string>? mappings = null;
+			List<DataTable> tables = new List<DataTable>();
 
 			// if mappings are given then they must exists
 			if (mappingFile is not null) {
@@ -58,6 +60,8 @@ class Program {
 				return 1;
 			}
 
+			tables.Add(Comparer.GetAppCompareTable (app1, app2, mappings));
+
 			string? objDir1 = null;
 			string? objDir2 = null;
 			if (!string.IsNullOrEmpty(objDirs)) {
@@ -73,15 +77,13 @@ class Program {
 				}
 			}
 
-			var table = Comparer.GetTable (app1, app2, mappings, objDir1, objDir2);
-			string markdown = Comparer.ExportMarkdown (table);
-
+			string markdown = Comparer.ExportMarkdown (tables);
 			if (outputMarkdown is not null) {
 				File.WriteAllText (outputMarkdown, markdown);
 			}
 
 			if (gist) {
-				var url = Comparer.Gist (table, openUrl: false);
+				var url = Comparer.Gist (tables, openUrl: false);
 				Console.Out.WriteLine (url);
 			}
 
