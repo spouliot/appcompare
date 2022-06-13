@@ -8,6 +8,7 @@ namespace AppCompare;
 class Comparer {
 
 	const string FILTER_ALL_FILES = "*.*";
+	const string FILTER_OBJ_FILES = "*.o";
 
 	public static DataTable GetAppCompareTable (string app1path, string app2path, Dictionary<string, string> mappings)
 	{
@@ -99,6 +100,35 @@ class Comparer {
 			AddSummaryRow (dt, "Managed *.dll/exe", managed_a, managed_b);
 		AddEmptyRow (dt);
 		AddSummaryRow (dt, "TOTAL", size_a, size_b);
+
+		return dt;
+	}
+
+	public static DataTable GetObjCompareTable (string app1path, string app2path, Dictionary<string, string> mappings)
+	{
+		DataTable dt = new ("Object files compare");
+		DataColumn files = new ("Files", typeof (string));
+		dt.Columns.Add (files);
+		dt.PrimaryKey = new [] { files };
+
+		dt.Columns.Add (new DataColumn ("Size A", typeof ((FileInfo, long))));
+		dt.Columns.Add (new DataColumn ("Size B", typeof ((FileInfo, long))));
+		dt.Columns.Add (new DataColumn ("diff", typeof (long)));
+		dt.Columns.Add (new DataColumn ("%", typeof (double)));
+		dt.Columns.Add (new DataColumn (" ", typeof (string)));
+
+		try {
+			Populate (dt, app1path, app2path, mappings, FILTER_OBJ_FILES);
+		} catch (Exception ex) {
+			dt.ExtendedProperties.Add ("Exception", ex);
+		}
+
+		dt.DefaultView.Sort = "Files ASC";
+		dt = dt.DefaultView.ToTable ();
+		dt.ExtendedProperties.Add ("AppA", app1path);
+		dt.ExtendedProperties.Add ("AppB", app2path);
+
+		AddEmptyRow (dt);
 		return dt;
 	}
 

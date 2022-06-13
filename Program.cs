@@ -75,6 +75,7 @@ class Program {
 					AnsiConsole.MarkupLine ($"[red]Error:[/] Cannot find obj or directory at `{objDir2}`.");
 					return 1;
 				}
+				tables.Add(Comparer.GetObjCompareTable (objDir1, objDir2, mappings));
 			}
 
 			string markdown = Comparer.ExportMarkdown (tables);
