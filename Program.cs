@@ -13,7 +13,7 @@ class Program {
 	/// <param name="outputMarkdown">Filename for the markdown output (optional).</param>
 	/// <param name="gist">Gist the output.</param>
 	/// <param name="mappingFile">File that describe a custom mapping between files from both application bundles/directories.</param>
-	/// <param name="objDirs">Pair of directories for scanning for object files, separated with a semicolon (optional)</param>
+	/// <param name="objDirs">Pair of directories for scanning for object files, separated with a colon (optional)</param>
 	/// <returns>0 for success, 1 for invalid/incorrect arguments, 2 for unexpected failure.</returns>
 	static int Main (string [] args, string? outputMarkdown, bool gist, string mappingFile, string? objDirs)
 	{
@@ -64,8 +64,9 @@ class Program {
 
 			string? objDir1 = null;
 			string? objDir2 = null;
+
 			if (!string.IsNullOrEmpty(objDirs)) {
-				var objDirsSplitted = objDirs.Split(";");
+				var objDirsSplitted = objDirs.Split(":");
 
 				if (!CheckDirectory (objDirsSplitted[0], out objDir1)) {
 					AnsiConsole.MarkupLine ($"[red]Error:[/] Cannot find obj or directory at `{objDir1}`.");
