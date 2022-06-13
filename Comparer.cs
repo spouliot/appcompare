@@ -9,7 +9,7 @@ class Comparer {
 
 	const string FILTER_ALL_FILES = "*.*";
 
-	public static DataTable GetTable (string app1path, string app2path, Dictionary<string, string> mappings)
+	public static DataTable GetTable (string app1path, string app2path, Dictionary<string, string> mappings, string? obj1path = null, string? obj2path = null)
 	{
 		DataTable dt = new ();
 		DataColumn files = new ("Files", typeof (string));

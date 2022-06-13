@@ -12,8 +12,9 @@ class Program {
 	/// <param name="outputMarkdown">Filename for the markdown output (optional).</param>
 	/// <param name="gist">Gist the output.</param>
 	/// <param name="mappingFile">File that describe a custom mapping between files from both application bundles/directories.</param>
+	/// <param name="objDirs">Pair of directories for scanning for object files, separated with a semicolon (optional)</param>
 	/// <returns>0 for success, 1 for invalid/incorrect arguments, 2 for unexpected failure.</returns>
-	static int Main (string [] args, string? outputMarkdown, bool gist, string mappingFile)
+	static int Main (string [] args, string? outputMarkdown, bool gist, string mappingFile, string? objDirs)
 	{
 		try {
 			Dictionary<string, string>? mappings = null;
@@ -57,7 +58,22 @@ class Program {
 				return 1;
 			}
 
-			var table = Comparer.GetTable (app1, app2, mappings);
+			string? objDir1 = null;
+			string? objDir2 = null;
+			if (!string.IsNullOrEmpty(objDirs)) {
+				var objDirsSplitted = objDirs.Split(";");
+
+				if (!CheckDirectory (objDirsSplitted[0], out objDir1)) {
+					AnsiConsole.MarkupLine ($"[red]Error:[/] Cannot find obj or directory at `{objDir1}`.");
+					return 1;
+				}
+				if (!CheckDirectory (objDirsSplitted[1], out objDir2)) {
+					AnsiConsole.MarkupLine ($"[red]Error:[/] Cannot find obj or directory at `{objDir2}`.");
+					return 1;
+				}
+			}
+
+			var table = Comparer.GetTable (app1, app2, mappings, objDir1, objDir2);
 			string markdown = Comparer.ExportMarkdown (table);
 
 			if (outputMarkdown is not null) {
