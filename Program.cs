@@ -67,13 +67,16 @@ class Program {
 
 			if (!string.IsNullOrEmpty(objDirs)) {
 				var objDirsSplitted = objDirs.Split(":");
-
+				if (objDirsSplitted.Length != 2) {
+					AnsiConsole.MarkupLine ($"[red]Error:[/] Missing or invalid path to obj directories.");
+					return 1;
+				}
 				if (!CheckDirectory (objDirsSplitted[0], out objDir1)) {
-					AnsiConsole.MarkupLine ($"[red]Error:[/] Cannot find obj or directory at `{objDir1}`.");
+					AnsiConsole.MarkupLine ($"[red]Error:[/] Cannot find obj directory at `{objDir1}`.");
 					return 1;
 				}
 				if (!CheckDirectory (objDirsSplitted[1], out objDir2)) {
-					AnsiConsole.MarkupLine ($"[red]Error:[/] Cannot find obj or directory at `{objDir2}`.");
+					AnsiConsole.MarkupLine ($"[red]Error:[/] Cannot find obj directory at `{objDir2}`.");
 					return 1;
 				}
 				tables.Add(Comparer.GetObjCompareTable (objDir1, objDir2, mappings));
