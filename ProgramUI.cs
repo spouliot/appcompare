@@ -174,7 +174,7 @@ class ProgramUI {
 		using SaveDialog d = new ("Export Table", "", new () { ".md" });
 		Application.Run (d);
 		if (!d.Canceled && (d.FilePath is not null)) {
-			File.WriteAllText (d.FilePath.ToString ()!, Comparer.ExportMarkdown (tv.Table));
+			File.WriteAllText (d.FilePath.ToString ()!, Comparer.ExportMarkdown (new List<DataTable> { tv.Table }));
 		}
 	}
 
@@ -239,13 +239,13 @@ class ProgramUI {
 
 	static void ViewGist ()
 	{
-		Comparer.Gist (tv.Table);
+		Comparer.Gist (new List<DataTable> { tv.Table });
 	}
 
 	static void ViewRefresh ()
 	{
 		if ((app1_path is not null) && (app2_path is not null)) {
-			tv.Table = Comparer.GetTable (app1_path, app2_path, mappings);
+			tv.Table = Comparer.GetAppCompareTable (app1_path, app2_path, mappings);
 			if (tv.Table.ExtendedProperties ["Exception"] is Exception ex) {
 				MessageBox.ErrorQuery (60, 13, "Error", ex.ToString (), "_Ok");
 			}

@@ -7,9 +7,12 @@ namespace AppCompare;
 
 class Comparer {
 
-	public static DataTable GetTable (string app1path, string app2path, Dictionary<string, string> mappings)
+	const string filter_all_files = "*.*";
+	const string filter_obj_files = "*.o";
+
+	public static DataTable GetAppCompareTable (string app1path, string app2path, Dictionary<string, string> mappings)
 	{
-		DataTable dt = new ();
+		DataTable dt = new ("App bundle compare");
 		DataColumn files = new ("Files", typeof (string));
 		dt.Columns.Add (files);
 		dt.PrimaryKey = new [] { files };
@@ -21,7 +24,7 @@ class Comparer {
 		dt.Columns.Add (new DataColumn (" ", typeof (string)));
 
 		try {
-			Populate (dt, app1path, app2path, mappings);
+			Populate (dt, app1path, app2path, mappings, filter_all_files);
 		} catch (Exception ex) {
 			dt.ExtendedProperties.Add ("Exception", ex);
 		}
@@ -97,19 +100,45 @@ class Comparer {
 			AddSummaryRow (dt, "Managed *.dll/exe", managed_a, managed_b);
 		AddEmptyRow (dt);
 		AddSummaryRow (dt, "TOTAL", size_a, size_b);
+
 		return dt;
 	}
 
-	static void Populate (DataTable dt, string app1path, string app2path, Dictionary<string, string> mappings)
+	public static DataTable GetObjCompareTable (string app1path, string app2path, Dictionary<string, string> mappings)
+	{
+		DataTable dt = new ("Object files compare");
+		DataColumn files = new ("Files", typeof (string));
+		dt.Columns.Add (files);
+		dt.PrimaryKey = new [] { files };
+
+		dt.Columns.Add (new DataColumn ("Size A", typeof ((FileInfo, long))));
+		dt.Columns.Add (new DataColumn ("Size B", typeof ((FileInfo, long))));
+		dt.Columns.Add (new DataColumn ("diff", typeof (long)));
+		dt.Columns.Add (new DataColumn ("%", typeof (double)));
+		dt.Columns.Add (new DataColumn (" ", typeof (string)));
+
+		try {
+			Populate (dt, app1path, app2path, mappings, filter_obj_files);
+		} catch (Exception ex) {
+			dt.ExtendedProperties.Add ("Exception", ex);
+		}
+
+		dt.DefaultView.Sort = "Files ASC";
+		dt = dt.DefaultView.ToTable ();
+		dt.ExtendedProperties.Add ("AppA", app1path);
+		dt.ExtendedProperties.Add ("AppB", app2path);
+
+		AddEmptyRow (dt);
+		return dt;
+	}
+
+	static void Populate (DataTable dt, string app1path, string app2path, Dictionary<string, string> mappings, string filter)
 	{
 		DirectoryInfo Directory1 = new (app1path);
 		if (Directory1.Exists) {
-			var len1 = app1path.Length;
-			if (app1path [len1 - 1] != Path.DirectorySeparatorChar)
-				len1++;
-			foreach (var file in Directory1.GetFiles ("*.*", SearchOption.AllDirectories)) {
+			foreach (var file in Directory1.GetFiles (filter, SearchOption.AllDirectories)) {
 				dt.Rows.Add (new object? [] {
-					file.FullName [len1..],
+					file.Name,
 					(file, file.Length),
 					empty,
 					-file.Length,
@@ -123,11 +152,8 @@ class Comparer {
 		if (!Directory2.Exists)
 			return;
 
-		var len2 = app2path.Length;
-		if (app2path [len2 - 1] != Path.DirectorySeparatorChar)
-			len2++;
-		foreach (var file in Directory2.GetFiles ("*.*", SearchOption.AllDirectories)) {
-			var name = file.FullName [len2..];
+		foreach (var file in Directory2.GetFiles (filter, SearchOption.AllDirectories)) {
+			var name = file.Name;
 			var row = dt.Rows.Find (name);
 			var remapped = false;
 			if (row is null) {
@@ -180,40 +206,44 @@ class Comparer {
 		});
 	}
 
-	static public string ExportMarkdown (DataTable table)
+	static public string ExportMarkdown (List<DataTable> tables)
 	{
 		StringBuilder builder = new ();
 		builder.AppendLine ("# Application Comparer");
 		builder.AppendLine ();
 
-		builder.Append ("* App A: `").Append (table.ExtendedProperties ["AppA"]).AppendLine ("`");
-		builder.Append ("* App B: `").Append (table.ExtendedProperties ["AppB"]).AppendLine ("`");
-		builder.AppendLine ();
+		foreach (var table in tables) {
+			builder.AppendLine ($"## {table.TableName}");
+			builder.AppendLine ();
+			builder.Append ("* Path A: `").Append (table.ExtendedProperties ["AppA"]).AppendLine ("`");
+			builder.Append ("* Path B: `").Append (table.ExtendedProperties ["AppB"]).AppendLine ("`");
+			builder.AppendLine ();
 
-		var columns = table.Columns;
-		// skip last "comment" column - it's for the tool itself, not for reporting
-		for (int i = 0; i < columns.Count - 1; i++) {
-			builder.Append ("| ").Append (columns [i].ColumnName).Append (' ');
-		}
-		builder.AppendLine ("|");
+			var columns = table.Columns;
+			// skip last "comment" column - it's for the tool itself, not for reporting
+			for (int i = 0; i < columns.Count - 1; i++) {
+				builder.Append ("| ").Append (columns [i].ColumnName).Append (' ');
+			}
+			builder.AppendLine ("|");
 
-		builder.AppendLine ("|:----|----:|----:|----:|----:|");
+			builder.AppendLine ("|:----|----:|----:|----:|----:|");
 
-		foreach (DataRow row in table.Rows) {
-			var file = row [0] as string;
-			if (file!.Length == 0) {
-				builder.AppendLine ("| | | | | |");
-			} else {
-				builder.Append ("| ").Append (row [0]);
-				(_, long f1length) = ((FileInfo?, long)) row [1];
-				builder.Append (" | ").AppendFormat ("{0:N0}", f1length);
-				(_, long f2length) = ((FileInfo?, long)) row [2];
-				builder.Append (" | ").AppendFormat ("{0:N0}", f2length);
-				builder.Append (" | ").AppendFormat ("{0:N0}", row [3]);
-				var percentage = (double) row [4];
-				var display = Double.IsNaN (percentage) ? "-" : percentage.ToString ("P1");
-				builder.Append (" | ").Append (display);
-				builder.AppendLine (" |)");
+			foreach (DataRow row in table.Rows) {
+				var file = row [0] as string;
+				if (file!.Length == 0) {
+					builder.AppendLine ("| | | | | |");
+				} else {
+					builder.Append ("| ").Append (row [0]);
+					(_, long f1length) = ((FileInfo?, long)) row [1];
+					builder.Append (" | ").AppendFormat ("{0:N0}", f1length);
+					(_, long f2length) = ((FileInfo?, long)) row [2];
+					builder.Append (" | ").AppendFormat ("{0:N0}", f2length);
+					builder.Append (" | ").AppendFormat ("{0:N0}", row [3]);
+					var percentage = (double) row [4];
+					var display = Double.IsNaN (percentage) ? "-" : percentage.ToString ("P1");
+					builder.Append (" | ").Append (display);
+					builder.AppendLine (" |)");
+				}
 			}
 		}
 		builder.AppendLine ();
@@ -221,13 +251,13 @@ class Comparer {
 		return builder.ToString ();
 	}
 
-	static public string Gist (DataTable table, bool openUrl = true)
+	static public string Gist (List<DataTable> tables, bool openUrl = true)
 	{
 		GistRequest request = new () {
 			Description = "Application Comparison Report",
 			Public = false,
 		};
-		request.AddFile ("report.md", ExportMarkdown (table));
+		request.AddFile ("report.md", ExportMarkdown (tables));
 
 		Task<GistResponse>? task = Task.Run (async () => await GistClient.CreateAsync (request));
 		var url = "https://github.com/spouliot/SimpleGist/wiki#errors";

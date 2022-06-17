@@ -1,3 +1,4 @@
+using System.Data;
 using Spectre.Console;
 using Terminal.Gui;
 
@@ -12,11 +13,13 @@ class Program {
 	/// <param name="outputMarkdown">Filename for the markdown output (optional).</param>
 	/// <param name="gist">Gist the output.</param>
 	/// <param name="mappingFile">File that describe a custom mapping between files from both application bundles/directories.</param>
+	/// <param name="objDirs">Pair of directories for scanning for object files, separated with a colon (optional)</param>
 	/// <returns>0 for success, 1 for invalid/incorrect arguments, 2 for unexpected failure.</returns>
-	static int Main (string [] args, string? outputMarkdown, bool gist, string mappingFile)
+	static int Main (string [] args, string? outputMarkdown, bool gist, string mappingFile, string? objDirs)
 	{
 		try {
 			Dictionary<string, string>? mappings = null;
+			List<DataTable> tables = new List<DataTable> ();
 
 			// if mappings are given then they must exists
 			if (mappingFile is not null) {
@@ -57,15 +60,35 @@ class Program {
 				return 1;
 			}
 
-			var table = Comparer.GetTable (app1, app2, mappings);
-			string markdown = Comparer.ExportMarkdown (table);
+			tables.Add (Comparer.GetAppCompareTable (app1, app2, mappings));
 
+			string? objDir1 = null;
+			string? objDir2 = null;
+
+			if (!string.IsNullOrEmpty (objDirs)) {
+				var objDirsSplitted = objDirs.Split (":");
+				if (objDirsSplitted.Length != 2) {
+					AnsiConsole.MarkupLine ($"[red]Error:[/] Missing or invalid path to obj directories.");
+					return 1;
+				}
+				if (!CheckDirectory (objDirsSplitted [0], out objDir1)) {
+					AnsiConsole.MarkupLine ($"[red]Error:[/] Cannot find obj directory at `{objDir1}`.");
+					return 1;
+				}
+				if (!CheckDirectory (objDirsSplitted [1], out objDir2)) {
+					AnsiConsole.MarkupLine ($"[red]Error:[/] Cannot find obj directory at `{objDir2}`.");
+					return 1;
+				}
+				tables.Add (Comparer.GetObjCompareTable (objDir1, objDir2, mappings));
+			}
+
+			string markdown = Comparer.ExportMarkdown (tables);
 			if (outputMarkdown is not null) {
 				File.WriteAllText (outputMarkdown, markdown);
 			}
 
 			if (gist) {
-				var url = Comparer.Gist (table, openUrl: false);
+				var url = Comparer.Gist (tables, openUrl: false);
 				Console.Out.WriteLine (url);
 			}
 
