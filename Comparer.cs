@@ -7,8 +7,8 @@ namespace AppCompare;
 
 class Comparer {
 
-	const string FILTER_ALL_FILES = "*.*";
-	const string FILTER_OBJ_FILES = "*.o";
+	const string filter_all_files = "*.*";
+	const string filter_obj_files = "*.o";
 
 	public static DataTable GetAppCompareTable (string app1path, string app2path, Dictionary<string, string> mappings)
 	{
@@ -24,7 +24,7 @@ class Comparer {
 		dt.Columns.Add (new DataColumn (" ", typeof (string)));
 
 		try {
-			Populate (dt, app1path, app2path, mappings, FILTER_ALL_FILES);
+			Populate (dt, app1path, app2path, mappings, filter_all_files);
 		} catch (Exception ex) {
 			dt.ExtendedProperties.Add ("Exception", ex);
 		}
@@ -118,7 +118,7 @@ class Comparer {
 		dt.Columns.Add (new DataColumn (" ", typeof (string)));
 
 		try {
-			Populate (dt, app1path, app2path, mappings, FILTER_OBJ_FILES);
+			Populate (dt, app1path, app2path, mappings, filter_obj_files);
 		} catch (Exception ex) {
 			dt.ExtendedProperties.Add ("Exception", ex);
 		}

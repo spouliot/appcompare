@@ -174,7 +174,7 @@ class ProgramUI {
 		using SaveDialog d = new ("Export Table", "", new () { ".md" });
 		Application.Run (d);
 		if (!d.Canceled && (d.FilePath is not null)) {
-			File.WriteAllText (d.FilePath.ToString ()!, Comparer.ExportMarkdown (new List<DataTable>{tv.Table}));
+			File.WriteAllText (d.FilePath.ToString ()!, Comparer.ExportMarkdown (new List<DataTable> { tv.Table }));
 		}
 	}
 
@@ -239,7 +239,7 @@ class ProgramUI {
 
 	static void ViewGist ()
 	{
-		Comparer.Gist (new List<DataTable> {tv.Table});
+		Comparer.Gist (new List<DataTable> { tv.Table });
 	}
 
 	static void ViewRefresh ()

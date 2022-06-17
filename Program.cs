@@ -1,6 +1,6 @@
+using System.Data;
 using Spectre.Console;
 using Terminal.Gui;
-using System.Data;
 
 namespace AppCompare;
 
@@ -19,7 +19,7 @@ class Program {
 	{
 		try {
 			Dictionary<string, string>? mappings = null;
-			List<DataTable> tables = new List<DataTable>();
+			List<DataTable> tables = new List<DataTable> ();
 
 			// if mappings are given then they must exists
 			if (mappingFile is not null) {
@@ -60,26 +60,26 @@ class Program {
 				return 1;
 			}
 
-			tables.Add(Comparer.GetAppCompareTable (app1, app2, mappings));
+			tables.Add (Comparer.GetAppCompareTable (app1, app2, mappings));
 
 			string? objDir1 = null;
 			string? objDir2 = null;
 
-			if (!string.IsNullOrEmpty(objDirs)) {
-				var objDirsSplitted = objDirs.Split(":");
+			if (!string.IsNullOrEmpty (objDirs)) {
+				var objDirsSplitted = objDirs.Split (":");
 				if (objDirsSplitted.Length != 2) {
 					AnsiConsole.MarkupLine ($"[red]Error:[/] Missing or invalid path to obj directories.");
 					return 1;
 				}
-				if (!CheckDirectory (objDirsSplitted[0], out objDir1)) {
+				if (!CheckDirectory (objDirsSplitted [0], out objDir1)) {
 					AnsiConsole.MarkupLine ($"[red]Error:[/] Cannot find obj directory at `{objDir1}`.");
 					return 1;
 				}
-				if (!CheckDirectory (objDirsSplitted[1], out objDir2)) {
+				if (!CheckDirectory (objDirsSplitted [1], out objDir2)) {
 					AnsiConsole.MarkupLine ($"[red]Error:[/] Cannot find obj directory at `{objDir2}`.");
 					return 1;
 				}
-				tables.Add(Comparer.GetObjCompareTable (objDir1, objDir2, mappings));
+				tables.Add (Comparer.GetObjCompareTable (objDir1, objDir2, mappings));
 			}
 
 			string markdown = Comparer.ExportMarkdown (tables);
