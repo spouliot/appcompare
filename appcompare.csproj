@@ -7,7 +7,7 @@
     <Nullable>enable</Nullable>
     <NoWarn>1591</NoWarn>
     <PackAsTool>true</PackAsTool>
-    <VersionPrefix>2.2.0</VersionPrefix>
+    <VersionPrefix>2.3.0</VersionPrefix>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -27,10 +27,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="CliWrap" Version="3.4.1" />
-    <PackageReference Include="Spectre.Console" Version="0.43.0" />
+    <PackageReference Include="CliWrap" Version="3.4.4" />
+    <PackageReference Include="Spectre.Console" Version="0.44.0" />
     <PackageReference Include="System.CommandLine.DragonFruit" Version="0.4.0-alpha.21617.1" />
-    <PackageReference Include="Terminal.Gui" Version="1.4.0" />
+    <PackageReference Include="Terminal.Gui" Version="1.6.4" />
   </ItemGroup>
 
 </Project>
