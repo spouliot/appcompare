@@ -1,6 +1,9 @@
 # ChangeLog
 
-## 2.2.1 (unreleased)
+## 2.3 (20 Jun 2022)
+
+### Features
+- Add support for comparing object files. Contributed by Ivan Povazan @ivanpovazan
 
 ### Fixes
 - Fix possible exception when refreshing (`F5`) in case the path(s) does not exist anymore.
