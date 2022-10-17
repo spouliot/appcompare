@@ -1,6 +1,11 @@
 # ChangeLog
 
-## 2.3 (20 Jun 2022)
+## unreleased
+
+### Fixes
+- Fix when the same filename is present more than once (in different)
+
+## 2.3.0 (20 Jun 2022)
 
 ### Features
 - Add support for comparing object files. Contributed by Ivan Povazan @ivanpovazan
