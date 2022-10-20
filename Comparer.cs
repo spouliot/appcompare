@@ -179,7 +179,7 @@ class Comparer {
 				}
 				row [2] = (file, file.Length);
 				var diff = file.Length;
-				(FileInfo? f1file, long f1length) = ((FileInfo?, long)) row [1];
+				(_, long f1length) = ((FileInfo?, long)) row [1];
 				diff -= f1length;
 				row [3] = diff;
 				row [4] = diff / (double) f1length;

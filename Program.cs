@@ -19,7 +19,7 @@ class Program {
 	{
 		try {
 			Dictionary<string, string>? mappings = null;
-			List<DataTable> tables = new List<DataTable> ();
+			List<DataTable> tables = new ();
 
 			// if mappings are given then they must exists
 			if (mappingFile is not null) {
