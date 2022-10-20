@@ -1,6 +1,12 @@
 # ChangeLog
 
-## unreleased
+## 2.4.0. (unreleased)
+
+### Updates
+- Updated CliWrap to 3.5.0
+- Updated Spectre.Console to 0.45.0
+- Updated System.CommandLine.DragonFruit to 0.4.0-alpha.22272.1
+- Updated Terminal.Gui to 1.8.2
 
 ### Fixes
 - Fix when the same filename is present more than once (in different)
