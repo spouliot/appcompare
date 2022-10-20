@@ -10,6 +10,7 @@
 
 ### Fixes
 - Fix when the same filename is present more than once (in different)
+- Fix About dialog width (display ASCII correctly)
 
 ## 2.3.0 (20 Jun 2022)
 

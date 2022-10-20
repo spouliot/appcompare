@@ -340,6 +340,6 @@ class ProgramUI {
 		aboutMessage.AppendLine ($"Version: {typeof (Program).Assembly.GetName ().Version}");
 		aboutMessage.AppendLine ("Copyright 2022 Sebastien Pouliot");
 		aboutMessage.AppendLine ("");
-		MessageBox.Query (60, 13, "About AppCompare", aboutMessage.ToString (), "_Ok");
+		MessageBox.Query (62, 13, "About AppCompare", aboutMessage.ToString (), "_Ok");
 	}
 }
