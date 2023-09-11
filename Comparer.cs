@@ -138,7 +138,7 @@ class Comparer {
 		if (Directory1.Exists) {
 			foreach (var file in Directory1.GetFiles (filter, SearchOption.AllDirectories)) {
 				dt.Rows.Add (new object? [] {
-					file.FullName[app1path.Length..],
+					file.FullName[(app1path.Trim (Path.DirectorySeparatorChar).Length + 2)..],
 					(file, file.Length),
 					empty,
 					-file.Length,
@@ -153,7 +153,7 @@ class Comparer {
 			return;
 
 		foreach (var file in Directory2.GetFiles (filter, SearchOption.AllDirectories)) {
-			var name = file.FullName[app2path.Length..];
+			var name = file.FullName[(app2path.Trim (Path.DirectorySeparatorChar).Length + 2)..];
 			var row = dt.Rows.Find (name);
 			var remapped = false;
 			if (row is null) {
